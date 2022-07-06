@@ -52,7 +52,7 @@ public class Main {
             long start = System.currentTimeMillis();
 
             ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(THREAD_COUNT);
-            List<Future<Map<String,Group>>> futureList = new ArrayList<>();
+            List<Future<Map<String,List<String >>>> futureList = new ArrayList<>();
             int linesCount = (int)Files.lines(INPUT_FILE).count();
             int batchSize = linesCount/THREAD_COUNT;
 
@@ -60,31 +60,31 @@ public class Main {
                 futureList.add(executor.submit(new SubgroupAggregator(INPUT_FILE, 1 + i*batchSize, Math.min(linesCount, (i+1)*batchSize))));
             }
 
-            List<Map<String,Group>> groupMapList = new ArrayList<>();
-            for(Future<Map<String,Group>> f : futureList) {
+            List<Map<String,List<String>>> groupMapList = new ArrayList<>();
+            for(Future<Map<String,List<String>>> f : futureList) {
                 groupMapList.add(f.get());
             }
             futureList.clear();
 
             while(groupMapList.size() > 1) {
                 while(groupMapList.size() > 1) {
-                    Map<String, Group> group1 = groupMapList.get(0);
+                    Map<String, List<String>> group1 = groupMapList.get(0);
                     groupMapList.remove(0);
-                    Map<String, Group> group2 = groupMapList.get(0);
+                    Map<String, List<String>> group2 = groupMapList.get(0);
                     groupMapList.remove(0);
                     futureList.add(executor.submit(new GroupMerger(group1, group2)));
                 }
-                for(Future<Map<String,Group>> f : futureList) {
+                for(Future<Map<String,List<String>>> f : futureList) {
                     groupMapList.add(f.get());
                 }
                 futureList.clear();
             }
             executor.shutdown();
 
-            List<Set<String>> groups = new HashSet<>(groupMapList.get(0).values())
+            List<List<String>> groups = groupMapList.get(0).values()
                     .stream()
-                    .map(Group::getRecords)
-                    .sorted(Comparator.comparing((Set<String> s) -> s.size()).reversed())
+                    .distinct()
+                    .sorted(Comparator.comparing((List<String> s) -> s.size()).reversed())
                     .toList();
 
             long multipleElementGroupCnt = groups.stream().filter(g -> g.size() > 1).count();
@@ -95,10 +95,9 @@ public class Main {
 
             Files.writeString(OUTPUT_FILE, String.valueOf(multipleElementGroupCnt));
             for(int i = 0; i < groups.size(); i++) {
-                Set<String> group = groups.get(i);
+                List<String> group = groups.get(i);
                 Files.writeString(OUTPUT_FILE, "Группа " + i, StandardOpenOption.APPEND);
                 Files.writeString(OUTPUT_FILE, String.join("\n", group), StandardOpenOption.APPEND);
-                groups.get(i).clear();
             }
 
             long end = System.currentTimeMillis();
