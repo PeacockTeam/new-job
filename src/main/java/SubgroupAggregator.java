@@ -28,6 +28,11 @@ public record SubgroupAggregator(Path file, int begin, int end) implements Calla
                 Set<String> newRecords = new HashSet<>(){{add(record);}};
                 Set<String> newAttributes = new HashSet<>();
 
+                // Case for record with empty strings only
+                if (attributes.isEmpty()) {
+                    groups.put("emptyGroup"+record.hashCode(), Arrays.asList(record));
+                }
+
                 while(!attributes.isEmpty()) {
                     String currentAttribute = attributes.iterator().next();
                     attributes.remove(currentAttribute);
