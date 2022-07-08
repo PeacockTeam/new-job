@@ -56,7 +56,7 @@ public class Main {
             int linesCount = (int)Files.lines(INPUT_FILE).count();
             int batchSize = linesCount/THREAD_COUNT;
 
-            for(int i = 0; i < THREAD_COUNT; i++){
+            for(int i = 0; i <= THREAD_COUNT; i++){
                 futureList.add(executor.submit(new SubgroupAggregator(INPUT_FILE, 1 + i*batchSize, Math.min(linesCount, (i+1)*batchSize))));
             }
 
@@ -93,11 +93,15 @@ public class Main {
                 Files.delete(OUTPUT_FILE);
             }
 
-            Files.writeString(OUTPUT_FILE, String.valueOf(multipleElementGroupCnt));
+            Files.writeString(OUTPUT_FILE, String.valueOf(multipleElementGroupCnt)+"\n");
             for(int i = 0; i < groups.size(); i++) {
                 List<String> group = groups.get(i);
-                Files.writeString(OUTPUT_FILE, "Группа " + i, StandardOpenOption.APPEND);
-                Files.writeString(OUTPUT_FILE, String.join("\n", group), StandardOpenOption.APPEND);
+                StringBuilder groupString = new StringBuilder();
+                for(String s : group){
+                    groupString.append(s).append('\n');
+                }
+                Files.writeString(OUTPUT_FILE, "Группа " + i + "\n", StandardOpenOption.APPEND);
+                Files.writeString(OUTPUT_FILE, groupString.toString(), StandardOpenOption.APPEND);
             }
 
             long end = System.currentTimeMillis();
