@@ -1,3 +1,5 @@
 Создать набор тестов для каждого из endpoint'ов Instagram API c использованием Postman (https://www.getpostman.com/).
 Проверить все типы запросов (GET, POST, PUT, DELETE).
 Результат: файлы коллекции и окружения в формате json 
+
+по выполнению положить на github
